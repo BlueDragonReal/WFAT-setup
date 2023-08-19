@@ -7,27 +7,30 @@ mkdir "%repo_dir%" 2>nul
 cd /d "%repo_dir%"
 
 REM Clone the Git repository into the specified directory
+set "repo_url=https://github.com/akmayer/Warframe-Algo-Trader"
 if exist "%repo_dir%\Warframe-Algo-Trader" (
     echo Repository is already cloned in %repo_dir%\Warframe-Algo-Trader.
 ) else (
     echo Cloning the Git repository into %repo_dir%\Warframe-Algo-Trader...
-    git clone https://github.com/akmayer/Warframe-Algo-Trader
+    git clone "%repo_url%"
 )
 
-REM Install Python 3.11
-echo Installing Python 3.11...
-start /wait "" "https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe" /quiet
+REM Install Python 3.11 if not already installed
+python --version 2>nul
+if %errorlevel% NEQ 0 (
+    echo Installing Python 3.11...
+    start /wait "" "https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe" /quiet
+)
 
 REM Activate Python virtual environment
 cd "%repo_dir%\Warframe-Algo-Trader"
-python -m venv venv
+if not exist "venv\Scripts\activate" (
+    python -m venv venv
+)
 call venv\Scripts\activate
 
 REM Install required Python packages
 python -m pip install -r requirements.txt
-
-REM Remove the existing config.json file (if it exists)
-if exist "config.json" del "config.json"
 
 REM Gather user input
 set /p "ign=Enter your in-game name: "
@@ -43,16 +46,21 @@ if not "%jwt_token:~0,3%"=="JWT" (
 )
 
 REM Offer platform choice and gather user input
+:platform_choice
 echo Choose your platform:
 echo [1] pc
 echo [2] ps4
 echo [3] xbox
 echo [4] switch
 set /p platform=Enter the platform number (1/2/3/4): 
-if "%platform%"=="1" set platform=pc
-if "%platform%"=="2" set platform=ps4
-if "%platform%"=="3" set platform=xbox
-if "%platform%"=="4" set platform=switch
+if "%platform%"=="1" set "platform=pc"
+if "%platform%"=="2" set "platform=ps4"
+if "%platform%"=="3" set "platform=xbox"
+if "%platform%"=="4" set "platform=switch"
+if not "%platform%"=="pc" if not "%platform%"=="ps4" if not "%platform%"=="xbox" if not "%platform%"=="switch" (
+    echo Invalid platform choice. Please select again.
+    goto platform_choice
+)
 
 REM Create config.json
 (
@@ -76,3 +84,6 @@ deactivate
 
 REM Restore the previous environment
 endlocal
+
+
+REM BLUECAT WAS HERE
