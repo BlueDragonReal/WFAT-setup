@@ -22,6 +22,13 @@ if %errorlevel% NEQ 0 (
     start /wait "" "https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe" /quiet
 )
 
+REM Install Node.js if not already installed
+node --version 2>nul
+if %errorlevel% NEQ 0 (
+    echo Installing Node.js...
+    start /wait "" "https://nodejs.org/dist/v14.17.6/node-v14.17.6-x64.msi" /quiet
+)
+
 REM Activate Python virtual environment
 cd "%repo_dir%\Warframe-Algo-Trader"
 if not exist "venv\Scripts\activate" (
@@ -32,58 +39,22 @@ call venv\Scripts\activate
 REM Install required Python packages
 python -m pip install -r requirements.txt
 
-REM Gather user input
-set /p "ign=Enter your in-game name: "
-set /p "jwt_token=Enter your JWT token (including 'JWT' prefix if present): "
-
-REM Clean JWT token input (remove 'JWT' prefix if present)
-set "jwt_token=%jwt_token:JWT =%"
-
-REM Prompt for missing 'JWT' prefix if not provided
-if not "%jwt_token:~0,3%"=="JWT" (
-    echo JWT prefix is missing. Adding it to the token.
-    set "jwt_token=JWT %jwt_token%"
-)
-
-REM Offer platform choice and gather user input
-:platform_choice
-echo Choose your platform:
-echo [1] pc
-echo [2] ps4
-echo [3] xbox
-echo [4] switch
-set /p platform=Enter the platform number (1/2/3/4): 
-if "%platform%"=="1" set "platform=pc"
-if "%platform%"=="2" set "platform=ps4"
-if "%platform%"=="3" set "platform=xbox"
-if "%platform%"=="4" set "platform=switch"
-if not "%platform%"=="pc" if not "%platform%"=="ps4" if not "%platform%"=="xbox" if not "%platform%"=="switch" (
-    echo Invalid platform choice. Please select again.
-    goto platform_choice
-)
-
-REM Create config.json
-(
-    echo {
-    echo    "pushbutton_token": "",
-    echo    "pushbutton_device_iden": "",
-    echo    "inGameName": "%ign%",
-    echo    "wfm_jwt_token": "%jwt_token%",
-    echo    "runningLiveScraper": false,
-    echo    "runningStatisticsScraper": false,
-    echo    "runningWarframeScreenDetect": false,
-    echo    "platform": "%platform%"
-    echo }
-) > config.json
-
-echo Installation completed successfully!
-pause
+REM Run init.py to initialize the database
+python init.py
 
 REM Deactivate Python virtual environment
 deactivate
 
+REM Run npm install manually
+cd "%repo_dir%\Warframe-Algo-Trader\frontend"
+npm install
+
+REM Re-activate Python virtual environment
+call venv\Scripts\activate
+
+REM Run startAll.bat
+cd "%repo_dir%\Warframe-Algo-Trader"
+call startAll.bat
+
 REM Restore the previous environment
 endlocal
-
-
-REM BLUECAT WAS HERE
