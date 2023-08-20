@@ -5,7 +5,10 @@ REM Check if Git is already installed
 git --version > nul 2>&1
 if %errorlevel% EQU 0 (
     echo Git is already installed.
-    goto check_python
+) else (
+    echo Git is not installed. Please install Git and then re-run this batch script.
+    pause
+    exit
 )
 
 REM Define the URL for Git installer
@@ -29,11 +32,12 @@ echo Git installation completed.
 
 :check_python
 REM Check if Python is already installed
-python --version > nul 2>&1
+where python > nul 2>&1
 if %errorlevel% NEQ 0 (
-    echo Python is not installed. Please install Python and then re-run this batch script.
-    pause
-    exit
+    echo Installing Python 3.11...
+    start /wait "" "https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe" /quiet
+    REM Wait for a short time to allow environment variables to update
+    timeout /t 10 /nobreak > nul
 )
 
 REM Set the installation directory to the user's home directory
