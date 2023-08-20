@@ -1,6 +1,34 @@
 @echo off
 setlocal
 
+REM Check if Git is already installed
+git --version > nul 2>&1
+if %errorlevel% EQU 0 (
+    echo Git is already installed.
+    goto continue_script
+)
+
+REM Define the URL for Git installer
+set "git_installer_url=https://github.com/git-for-windows/git/releases/download/v2.33.0.windows.2/Git-2.33.0.2-64-bit.exe"
+
+REM Define the installation path (adjust as needed)
+set "install_path=C:\Program Files\Git"
+
+REM Download Git installer
+echo Downloading Git installer...
+curl -L -o git_installer.exe "%git_installer_url%"
+
+REM Install Git
+echo Installing Git...
+start /wait git_installer.exe /VERYSILENT /NORESTART /NOCANCEL /DIR="%install_path%"
+
+REM Clean up downloaded installer
+del git_installer.exe
+
+echo Git installation completed.
+
+:continue_script
+
 REM Set the installation directory to the user's home directory
 set "repo_dir=%USERPROFILE%\algo-trader"
 mkdir "%repo_dir%" 2>nul
@@ -58,3 +86,4 @@ call startAll.bat
 
 REM Restore the previous environment
 endlocal
+pause
