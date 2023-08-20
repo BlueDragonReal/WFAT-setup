@@ -5,7 +5,7 @@ REM Check if Git is already installed
 git --version > nul 2>&1
 if %errorlevel% EQU 0 (
     echo Git is already installed.
-    goto continue_script
+    goto check_python
 )
 
 REM Define the URL for Git installer
@@ -27,7 +27,14 @@ del git_installer.exe
 
 echo Git installation completed.
 
-:continue_script
+:check_python
+REM Check if Python is already installed
+python --version > nul 2>&1
+if %errorlevel% NEQ 0 (
+    echo Python is not installed. Please install Python and then re-run this batch script.
+    pause
+    exit
+)
 
 REM Set the installation directory to the user's home directory
 set "repo_dir=%USERPROFILE%\algo-trader"
@@ -53,8 +60,9 @@ if %errorlevel% NEQ 0 (
 REM Install Node.js if not already installed
 node --version 2>nul
 if %errorlevel% NEQ 0 (
-    echo Installing Node.js...
-    start /wait "" "https://nodejs.org/dist/v14.17.6/node-v14.17.6-x64.msi" /quiet
+    echo Please install Node.js using NVM and then reopen this batch script.
+    pause
+    exit
 )
 
 REM Activate Python virtual environment
